@@ -1,0 +1,73 @@
+import numpy as np
+import gym
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Flatten
+from keras.optimizers import Adam
+from rl.agents.dqn import DQNAgent
+from rl.policy import EpsGreedyQPolicy
+from rl.memory import SequentialMemory
+
+environment_name = 'MountainCar-v0'
+env = gym.make(environment_name)
+np.random.seed(0)
+env.seed(0)
+
+num_actions = env.action_space.n
+agent = Sequential()
+agent.add(Flatten(input_shape =(1, ) + env.observation_space.shape))
+agent.add(Dense(16))
+agent.add(Activation('relu'))
+agent.add(Dense(num_actions))
+agent.add(Activation('linear'))
+
+strategy = EpsGreedyQPolicy()
+memory = SequentialMemory(limit = 10000, window_length = 1)
+dqn = DQNAgent(model = agent, nb_actions = num_actions,
+memory = memory, nb_steps_warmup = 10,
+target_model_update = 1e-2, policy = strategy)
+dqn.compile(Adam(lr = 1e-3), metrics =['mae'])
+
+dqn.fit(env, nb_steps = 5000, visualize = True, verbose = 2)
+
+dqn.test(env, nb_episodes = 5, visualize = True)
+
+
+#ten
+
+import numpy as np
+
+grid_world = np.array([[0, 0, 0],
+[0, 1, 0],
+[0, 0, 2]])
+
+q_table = np.zeros((3, 3, 4)) # 3x3 grid, 4 actions (up, down, left, right)
+
+learning_rate = 0.1
+discount_factor = 0.9
+num_episodes = 1000
+
+for episode in range(num_episodes):
+state = (0, 0) # starting state
+while state != (2, 2): # while the goal is not reached
+
+if np.random.rand() < 0.1:
+action = np.random.randint(4) # random action
+else:
+action = np.argmax(q_table[state])
+
+next_state = tuple(np.add(state, [(0, -1), (0, 1), (-1, 0), (1, 0)][action]))
+
+if next_state[0] < 0 or next_state[0] >= grid_world.shape[0] or next_state[1] < 0 or
+next_state[1] >= \
+grid_world.shape[1]:
+
+reward = -1
+next_state = state
+else:
+reward = -1 if grid_world[next_state] == 0 else 10
+
+q_table[state][action] += learning_rate * (
+reward + discount_factor * np.max(q_table[next_state]) - q_table[state][action])
+state = next_state # move to the next state
+
+print(q_table)
