@@ -1,0 +1,177 @@
+import pandas as pd
+data=pd.read_csv("exp3.csv")
+heart_disease=pd.DataFrame(data)
+print(heart_disease)
+from pgmpy.models import BayesianNetwork as BayesianModel
+model=BayesianModel([
+('age','Lifestyle'),
+('Gender','Lifestyle'),
+('Family','heartdisease'),
+('diet','cholestrol'),
+('Lifestyle','diet'),
+('cholestrol','heartdisease'),
+('diet','cholestrol')
+])
+from pgmpy.estimators import MaximumLikelihoodEstimator
+model.fit(heart_disease, estimator=MaximumLikelihoodEstimator)
+from pgmpy.inference import VariableElimination
+HeartDisease_infer = VariableElimination(model)
+print('For age Enter { SuperSeniorCitizen:0, SeniorCitizen:1, MiddleAged:2, Youth:3, Teen:4 }')
+print('For Gender Enter { Male:0, Female:1 }')
+print('For Family History Enter { yes:1, No:0 }')
+print('For diet Enter { High:0, Medium:1 }')
+print('For lifeStyle Enter { Athlete:0, Active:1, Moderate:2, Sedentary:3 }')
+print('For cholesterol Enter { High:0, BorderLine:1, Normal:2 }')
+q = HeartDisease_infer.query(variables=['heartdisease'], evidence={
+'age':int(input('Enter age :')),
+'Gender':int(input('Enter Gender :')),
+'Family':int(input('Enter Family history :')),
+'diet':int(input('Enter diet :')),
+'Lifestyle':int(input('Enter Lifestyle :')),
+'cholestrol':int(input('Enter cholestrol :'))
+})
+
+#four
+
+from sklearn.cluster import KMeans
+from sklearn import preprocessing
+from sklearn.mixture import GaussianMixture
+from sklearn.datasets import load_iris
+import sklearn.metrics as sm
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+dataset=load_iris()
+X=pd.DataFrame(dataset.data)
+X.columns=['Sepal_Length','Sepal_Width','Petal_Length','Petal_Width']
+y=pd.DataFrame(dataset.target)
+y.columns=['Targets']
+
+plt.figure(figsize=(14,7))
+colormap=np.array(['red','lime','black'])
+
+plt.subplot(1,3,1)
+plt.scatter(X.Petal_Length,X.Petal_Width,c=colormap[y.Targets],s=40)
+plt.title('Real')
+
+plt.subplot(1,3,2)
+model=KMeans(n_clusters=3)
+model.fit(X)
+predY=np.choose(model.labels_,[0,1,2]).astype(np.int64)
+plt.scatter(X.Petal_Length,X.Petal_Width,c=colormap[predY],s=40)
+plt.title('KMeans')
+
+scaler=preprocessing.StandardScaler()
+scaler.fit(X)
+xsa=scaler.transform(X)
+xs=pd.DataFrame(xsa,columns=X.columns)
+gmm=GaussianMixture(n_components=3)
+gmm.fit(xs)
+y_cluster_gmm=gmm.predict(xs)
+plt.subplot(1,3,3)
+plt.scatter(X.Petal_Length,X.Petal_Width,c=colormap[y_cluster_gmm],s=40)
+plt.title('GMM Classification')
+plt.show()
+
+#five
+
+import numpy as np
+import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'Class']
+
+dataset = pd.read_csv("exp5.csv", names=names)
+X = dataset.iloc[:, :-1]
+y = dataset.iloc[:, -1]
+print(X.head())
+Page No: 14
+Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.10)
+classifier = KNeighborsClassifier(n_neighbors=5).fit(Xtrain, ytrain)
+ypred = classifier.predict(Xtest)
+i = 0
+print ("\n ------------------------------------------------------------------------ ")
+print ('%-25s %-25s %-25s' % ('Original Label', 'Predicted Label', 'Correct/Wrong'))
+print ("------------------------------------------------------------------------- ")
+for label in ytest:
+print ('%-25s %-25s' % (label, ypred[i]), end="")
+if (label == ypred[i]):
+print (' %-25s' % ('Correct'))
+else:
+print (' %-25s' % ('Wrong'))
+i = i + 1
+print ("------------------------------------------------------------------------- ")
+print("\nConfusion Matrix:\n",metrics.confusion_matrix(ytest, ypred))
+print ("------------------------------------------------------------------------- ")
+print("\nClassification Report:\n",metrics.classification_report(ytest, ypred))
+print ("------------------------------------------------------------------------- ")
+print('Accuracy of the classifer is %0.2f' % metrics.accuracy_score(ytest,ypred)
+
+#7
+      
+import numpy as np
+import pandas as pd
+
+dataset = pd.read_csv('Data.csv')
+X = dataset.iloc[:, :-1].values
+y = dataset.iloc[:, -1].values
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25, random_state = 0)
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+from sklearn.svm import SVC
+classifier = SVC(kernel = 'linear', random_state = 0)
+
+classifier.fit(X_train, y_train)
+
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+decision_function_shape='ovr', degree=3, gamma='auto_deprecated',
+kernel='linear', max_iter=-1, probability=False, random_state=0,
+shrinking=True, tol=0.001, verbose=False)
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+y_pred = classifier.predict(X_test)
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+accuracy_score(y_test, y_pred)
+
+#8
+
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import MaxPool2D
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Dense
+
+X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], X_train.shape[2], 1))
+X_test = X_test.reshape((X_test.shape[0],X_test.shape[1],X_test.shape[2],1))
+
+print(X_train.shape)
+print(X_test.shape)
+
+X_train=X_train/255
+X_test=X_test/255
+
+model=Sequential()model=Sequential()
+
+model.add(Conv2D(32,(3,3),activation=’relu’,input_shape=(28,28,1)))
+
+model.add(MaxPool2D(2,2))
+
+
+model.add(Flatten())
+model.add(Dense(100,activation=’relu’))
+
+model.add(Dense(10,activation=’softmax’))
+
+model.compile(loss=’sparse_categorical_crossentropy’,optimizer=’adam’,metrics=[‘accuracy’])
+
+model.fit(X_train,y_train,epochs=10)
